@@ -2,125 +2,155 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#111111">
-<title>My PhotoBooth</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#efe5d5">
 <link rel="manifest" href="manifest.json">
+<title>Vintage Photo Booth</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.app{height:100dvh;display:flex;flex-direction:column}
-header{padding:calc(env(safe-area-inset-top) + 12px) 18px 12px;display:flex;justify-content:space-between;align-items:center;background:#111;z-index:2}
-.brand{font-weight:800;font-size:18px}.small{opacity:.65;font-size:12px}
-.stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;background:#222;overflow:hidden}
-video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.count{font-size:110px;font-weight:900;text-shadow:0 4px 25px #000;display:none}
-.flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none}
-.flash.on{animation:flash .28s ease}
-@keyframes flash{0%{opacity:.95}100%{opacity:0}}
-footer{padding:14px 18px calc(env(safe-area-inset-bottom) + 18px);background:#111}
-button{border:0;border-radius:18px;padding:16px 22px;font-size:17px;font-weight:800;cursor:pointer}
-.primary{width:100%;background:#fff;color:#111}
-.secondary{background:#2c2c2c;color:#fff}
-.row{display:flex;gap:10px}.row button{flex:1}
-#result{display:none;position:absolute;inset:0;background:#111;z-index:5;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-#result img{max-width:92%;max-height:75%;object-fit:contain;border-radius:12px}
-#status{text-align:center;padding:8px 0;font-size:14px;opacity:.8}
+:root{--bg:#efe5d5;--ink:#3d3028;--accent:#8b6b4f;--paper:#fffaf2;--muted:#75675d}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif}
+button,input,select{font:inherit}.app{min-height:100vh;padding:18px}.top{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0 18px}.brand{font-size:28px;font-weight:700}.tag{font-size:12px;letter-spacing:2px;color:var(--muted)}
+.layout{max-width:1200px;margin:auto;display:grid;grid-template-columns:1.3fr .7fr;gap:18px}
+.card{background:rgba(255,250,242,.86);border:1px solid rgba(61,48,40,.15);border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(70,50,30,.08)}
+.camera-wrap{position:relative;overflow:hidden;border-radius:18px;background:#211d1a;aspect-ratio:4/3}
+video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
+.count{position:absolute;inset:0;display:grid;place-items:center;color:white;font-size:110px;font-weight:700;text-shadow:0 4px 20px #0008;pointer-events:none}
+.preview{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.shot{aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:#ddd}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;border-radius:999px;padding:12px 18px;background:var(--accent);color:white;cursor:pointer;font-weight:700}.btn.secondary{background:#e4d6c5;color:var(--ink)}.btn:disabled{opacity:.45}
+h2{margin:5px 0 14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.row label{font-size:14px;font-weight:700;min-width:92px}
+select,input[type=color],input[type=text]{border:1px solid #cdbda9;border-radius:10px;padding:9px;background:#fffdf9;color:var(--ink)}
+input[type=color]{padding:2px;width:50px;height:38px}.hint{font-size:12px;color:var(--muted);line-height:1.5}
+canvas{width:100%;height:auto;border-radius:16px;background:#fff;margin-top:12px}
 .hidden{display:none!important}
+.status{font-size:13px;color:var(--muted);margin-top:10px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.preview{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="app">
-<header><div class="brand">📸 MY PHOTOBOOTH</div><div class="small" id="counter">Ready</div></header>
-<div class="stage">
-  <video id="video" autoplay playsinline muted></video>
-  <div class="overlay"><div class="count" id="count"></div></div>
-  <div class="flash" id="flash"></div>
-  <div id="result">
-    <div id="status">Your photo is ready!</div>
-    <img id="finalImg" alt="Final photobooth photo">
-    <div class="row" style="width:92%;margin-top:14px">
-      <button class="secondary" id="retake">Retake</button>
-      <button class="primary" id="save">Save Photo</button>
-    </div>
+  <div class="top">
+    <div><div class="brand" id="brandTitle">VINTAGE PHOTO BOOTH</div><div class="tag">MEMORIES • 4 SHOTS • YOUR STYLE</div></div>
+    <div class="tag">CAMERA + PRINT READY</div>
   </div>
-</div>
-<footer><button class="primary" id="start">START PHOTOBOOTH</button></footer>
+
+  <div class="layout">
+    <section class="card">
+      <div class="camera-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="count" class="count hidden"></div>
+      </div>
+      <div id="status" class="status">Allow camera access to begin.</div>
+      <div class="preview" id="preview"></div>
+      <div class="controls">
+        <button class="btn" id="startBtn">START 4 PHOTOS</button>
+        <button class="btn secondary" id="retakeBtn" disabled>RETAKE</button>
+        <button class="btn secondary" id="printBtn" disabled>PRINT STRIP</button>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h2>Customize your booth</h2>
+      <div class="row"><label>Template</label>
+        <select id="template">
+          <option value="vintage">Vintage Cream</option>
+          <option value="pinterest">Pinterest Minimal</option>
+          <option value="film">35mm Film</option>
+          <option value="polaroid">Soft Polaroid</option>
+        </select>
+      </div>
+      <div class="row"><label>Layout</label>
+        <select id="layoutSelect">
+          <option value="strip">4-photo strip</option>
+          <option value="grid">2 × 2 grid</option>
+        </select>
+      </div>
+      <div class="row"><label>Frame color</label><input id="frameColor" type="color" value="#8b6b4f"></div>
+      <div class="row"><label>Text</label><input id="customText" type="text" value="MEMORIES" maxlength="28"></div>
+      <div class="row"><label>Countdown</label>
+        <select id="seconds"><option>3</option><option>5</option><option>7</option></select>
+      </div>
+      <p class="hint">You can change the template, colors, text, countdown and layout anytime. The final design is generated from the four photos.</p>
+      <canvas id="result" width="1200" height="1800"></canvas>
+      <div class="controls">
+        <button class="btn" id="saveBtn" disabled>SAVE JPG</button>
+      </div>
+    </aside>
+  </div>
 </div>
 
 <script>
-const video=document.getElementById('video'), start=document.getElementById('start'),
-count=document.getElementById('count'), flash=document.getElementById('flash'),
-counter=document.getElementById('counter'), result=document.getElementById('result'),
-finalImg=document.getElementById('finalImg'), save=document.getElementById('save'), retake=document.getElementById('retake');
-let stream=null, shots=[], finalBlob=null;
+const video=document.getElementById('video'), count=document.getElementById('count'), preview=document.getElementById('preview');
+const startBtn=document.getElementById('startBtn'), retakeBtn=document.getElementById('retakeBtn'), printBtn=document.getElementById('printBtn'), saveBtn=document.getElementById('saveBtn');
+const statusEl=document.getElementById('status'), canvas=document.getElementById('result'), ctx=canvas.getContext('2d');
+let stream=null, photos=[], busy=false;
 
-async function openCamera(){
-  if(stream) return;
+async function camera(){
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"user"},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    video.srcObject=stream;
-  }catch(e){
-    alert("Camera access is required. Please allow Camera access in Safari and try again.");
-  }
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:false});
+    video.srcObject=stream; statusEl.textContent="Camera ready.";
+  }catch(e){statusEl.textContent="Camera unavailable. Use HTTPS/localhost and allow camera permission."}
 }
-openCamera();
-
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 async function countdown(n){
-  count.style.display='block';
-  for(let i=n;i>0;i--){count.textContent=i;await wait(900)}
-  count.textContent="📸"; await wait(250); count.style.display='none';
+  count.classList.remove('hidden');
+  for(let i=n;i>0;i--){count.textContent=i;await wait(1000)}
+  count.textContent="SMILE!";await wait(450);count.classList.add('hidden');
 }
-function takeShot(){
-  const w=video.videoWidth||1280,h=video.videoHeight||720;
-  const c=document.createElement('canvas'); c.width=w;c.height=h;
-  const x=c.getContext('2d');
-  x.translate(w,0);x.scale(-1,1);x.drawImage(video,0,0,w,h);
-  flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');
-  return c;
+function capture(){
+  const c=document.createElement('canvas'); c.width=video.videoWidth||1280;c.height=video.videoHeight||720;
+  const x=c.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(video,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg',.92);
 }
-function makeStrip(){
-  const photoW=900, photoH=Math.round(photoW*video.videoHeight/video.videoWidth);
-  const gap=22, pad=45, labelH=110;
-  const out=document.createElement('canvas');
-  out.width=photoW*2+gap+pad*2; out.height=photoH*2+gap+pad*2+labelH;
-  const x=out.getContext('2d');
-  x.fillStyle="#f7f4ef";x.fillRect(0,0,out.width,out.height);
-  shots.forEach((c,i)=>{
-    const px=pad+(i%2)*(photoW+gap), py=pad+Math.floor(i/2)*(photoH+gap);
-    x.drawImage(c,px,py,photoW,photoH);
-  });
-  x.fillStyle="#222";x.font="700 42px -apple-system, sans-serif";x.textAlign="center";
-  x.fillText("MY PHOTOBOOTH",out.width/2,out.height-50);
-  return out;
+function showPreview(){
+  preview.innerHTML='';
+  photos.forEach(p=>{const im=new Image();im.src=p;im.className='shot';preview.appendChild(im)})
 }
-async function startBooth(){
-  await openCamera(); if(!stream)return;
-  start.disabled=true; shots=[]; result.style.display='none';
-  for(let i=0;i<4;i++){
-    counter.textContent=`Photo ${i+1} of 4`;
-    await countdown(3);
-    shots.push(takeShot());
-    await wait(500);
+async function shoot(){
+  if(busy)return; busy=true; photos=[];showPreview(); startBtn.disabled=true; retakeBtn.disabled=true;printBtn.disabled=true;saveBtn.disabled=true;
+  const n=+document.getElementById('seconds').value;
+  for(let i=0;i<4;i++){statusEl.textContent=`Photo ${i+1} of 4`;await countdown(n);photos.push(capture());showPreview();await wait(600)}
+  statusEl.textContent="Done! Customize the design, save, or print.";
+  busy=false;retakeBtn.disabled=false;printBtn.disabled=false;saveBtn.disabled=false;drawResult();
+}
+function fitImage(img,x,y,w,h){
+  const r=Math.max(w/img.width,h/img.height), nw=img.width*r, nh=img.height*r;
+  ctx.drawImage(img,x+(w-nw)/2,y+(h-nh)/2,nw,nh);
+}
+function drawResult(){
+  if(photos.length<4)return;
+  const template=document.getElementById('template').value, layout=document.getElementById('layoutSelect').value;
+  const color=document.getElementById('frameColor').value, text=document.getElementById('customText').value||"MEMORIES";
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  let bg="#f7efe2", ink="#3d3028", border=color;
+  if(template==="pinterest"){bg="#f8f6f1";ink="#242424"}
+  if(template==="film"){bg="#202020";ink="#fff";border="#ddd"}
+  if(template==="polaroid"){bg="#eee9df";ink="#453b35";border="#453b35"}
+  ctx.fillStyle=bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  const margin=90, gap=35;
+  if(layout==="strip"){
+    const w=canvas.width-2*margin, h=340;
+    photos.forEach((src,i)=>{const im=new Image();im.onload=()=>{fitImage(im,margin,90+i*(h+gap),w,h);ctx.strokeStyle=border;ctx.lineWidth=8;ctx.strokeRect(margin,90+i*(h+gap),w,h);if(i===3)finishText(90+4*(h+gap));};im.src=src})
+  }else{
+    const w=(canvas.width-2*margin-gap)/2,h=(canvas.height-300-2*margin-gap)/2;
+    photos.forEach((src,i)=>{const im=new Image();im.onload=()=>{const x=margin+(i%2)*(w+gap),y=100+Math.floor(i/2)*(h+gap);fitImage(im,x,y,w,h);ctx.strokeStyle=border;ctx.lineWidth=8;ctx.strokeRect(x,y,w,h);if(i===3)finishText(canvas.height-130)};im.src=src})
   }
-  counter.textContent="Complete!";
-  const strip=makeStrip();
-  finalBlob=await new Promise(r=>strip.toBlob(r,"image/jpeg",.92));
-  finalImg.src=URL.createObjectURL(finalBlob);
-  result.style.display='flex'; start.disabled=false;
-}
-start.addEventListener('click',startBooth);
-retake.addEventListener('click',()=>{result.style.display='none';counter.textContent="Ready"});
-save.addEventListener('click',async()=>{
-  if(!finalBlob)return;
-  const file=new File([finalBlob],"photobooth.jpg",{type:"image/jpeg"});
-  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-    try{await navigator.share({files:[file],title:"My PhotoBooth Photo"});return}catch(e){}
+  function finishText(y){
+    ctx.fillStyle=ink;ctx.textAlign="center";ctx.font="bold 48px Georgia";ctx.fillText(text.toUpperCase(),canvas.width/2,y);
+    ctx.font="22px Georgia";ctx.fillText(new Date().toLocaleDateString(),canvas.width/2,y+42);
   }
-  const a=document.createElement('a');a.href=URL.createObjectURL(finalBlob);a.download="photobooth.jpg";a.click();
-});
+}
+function download(){
+  const a=document.createElement('a');a.download='photobooth.jpg';a.href=canvas.toDataURL('image/jpeg',.95);a.click()
+}
+function print(){
+  const data=canvas.toDataURL('image/png');const w=window.open('','_blank');
+  if(!w){alert("Please allow pop-ups for printing.");return}
+  w.document.write(`<html><head><title>Photo Booth Print</title><style>@page{margin:0}html,body{margin:0;text-align:center}img{max-width:100%;height:auto}</style></head><body><img src="${data}"><script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();
+}
+startBtn.onclick=shoot;retakeBtn.onclick=shoot;saveBtn.onclick=download;printBtn.onclick=print;
+['template','layoutSelect','frameColor','customText'].forEach(id=>document.getElementById(id).addEventListener('input',drawResult));
+camera();
 </script>
 </body>
 </html>

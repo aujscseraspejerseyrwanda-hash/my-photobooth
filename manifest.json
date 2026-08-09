@@ -1,9 +1,9 @@
 {
-  "name":"My PhotoBooth",
-  "short_name":"PhotoBooth",
-  "start_url":"./",
-  "display":"standalone",
-  "background_color":"#111111",
-  "theme_color":"#111111",
-  "icons":[]
+  "name": "Vintage Photo Booth",
+  "short_name": "Photo Booth",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#efe5d5",
+  "theme_color": "#efe5d5",
+  "icons": []
 }
